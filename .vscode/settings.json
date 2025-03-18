@@ -1,0 +1,21 @@
+{
+    "dbt.enableNewLineagePanel": true,
+    "dbt.perspectiveTheme": "Monokai",
+    "files.associations": {
+        "/**/models/**/*.sql": "jinja-sql",
+        "/**/macros/**/*.sql": "jinja-sql",
+        "/**/tests/**/*.sql": "jinja-sql",
+        "/**/*.lkml": "lookml",
+        "/**/Code/**/*.sql": "sql",
+        "/**/dbt_project/**/*.sql": "jinja-sql",
+        "*.yml": "yaml",
+        ".env*": "dotenv",
+        "*.css": "tailwindcss",
+        "*.bqsql": "sql-bigquery",
+        "*.sql": "sql",
+        "/**/.github/**/*.yml": "github-actions-workflow"
+    },
+    "editor.minimap.autohide": true,
+    "editor.minimap.enabled": false,
+    "python.defaultInterpreterPath": "./.venv/bin/python"
+}
