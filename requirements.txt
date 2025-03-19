@@ -57,3 +57,4 @@ virtualenv==20.25.1
 
 dbt-core
 dbt-duckdb
+ipdb
