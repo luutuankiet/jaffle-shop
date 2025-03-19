@@ -1,47 +1,16 @@
-{%- macro star_cte(cte_name, model_name=none, relation_alias=none,prefix='', suffix='', quote_identifiers=True) -%} 
+{%- macro old_star_cte(cte_name, model_name=none, relation_alias=none,prefix='', suffix='', quote_identifiers=True) -%} 
 {%- set re = modules.re -%}
 {%- set ns = namespace(model_name=model_name, found_cte=false, cte_content=[]) -%}
-{%- set parsed_model = context['context']['model'] -%}
 {%- if execute -%}
 
-    {%- if not model_name and 'from remote system.sql' in parsed_model['original_file_path'] -%}
-    {# TODO: this.model_name dont work with dbt power user. #}
-    {# needed to do a different approach to get the model name like so. for now it works.#}
-    {# https://github.com/AltimateAI/vscode-dbt-power-user/issues/938 #}
-        {%- set regex_hash_match = '[\s\n]+' -%}
-        {%- set regex_words_count = 100 -%}
-        {%- set target_sql = parsed_model['raw_code'] -%}
-        {%- set target_sql = re.sub(regex_hash_match,'',target_sql)[:regex_words_count] -%}
-        {%- for node in graph.nodes.values() -%}
 
-            {%- set node_raw_code = re.sub(regex_hash_match,'', node['raw_code']) -%}       
-            {%- set node_raw_code = node_raw_code[:regex_words_count] -%}       
-            {%- if node_raw_code == target_sql -%} 
-                {%- set ns.model_name = node['name'] -%}
-
-                {%- break -%}
-            {%- endif -%}
-
-        {%- endfor -%}
-
-    {# {% do exceptions.raise_compiler_error('debug: ' ~ parsed_model )  %} #}
-    {%- elif not ns.model_name -%}
+    {%- if not ns.model_name -%}
         {%- set ns.model_name = this.name -%}
     {%- endif -%}
-
-    {{- 
-        exceptions.raise_compiler_error(
-            'cannot auto detect model file for ' ~ 
-            "'" ~ context['context']['model']['unique_id'] ~ "'" ~ 
-            '. Please manually provide the model_name arg.'
-            )  if (
-            graph.nodes.values()
-            | selectattr('name', 'equalto', ns.model_name) 
-            | selectattr('resource_type', 'equalto', 'model')
-            | list 
-            | length == 0
-            )
-        -}}
+{# {{ exceptions.raise_compiler_error( #}
+   {# 'ns.model_name = ' ~ ns.model_name ~ '\n' #}
+   {# 'this = ' ~ this #}
+{# ) }} #}
 
     {# Get the compiled SQL of the model #}
     {%- set model_sql = codegen.generate_model_import_ctes(ns.model_name) -%}
@@ -164,9 +133,12 @@
 
 {#  starts laying out the columns #}
 
-
         {%- for col in columns -%}
-            {%- if '*' in col -%} * {%- continue -%} {%- endif -%}
+            {%- if '*' in col -%} * 
+            {%- if not loop.last -%},{{- '\n  ' -}}{%- endif -%}
+            {%- continue -%} 
+            
+            {%- endif -%}
             {%- if relation_alias -%}{{- relation_alias -}}.{%- else -%}{%- endif -%}
                 {%- if quote_identifiers -%}
                     {{- adapter.quote(col)|trim -}} {%- if prefix!='' or suffix!='' -%} as {{- adapter.quote(prefix ~ col ~ suffix)|trim -}} {%- endif -%}

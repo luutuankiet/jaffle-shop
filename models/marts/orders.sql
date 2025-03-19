@@ -42,7 +42,18 @@ order_items_summary as (
 compute_booleans as (
 
     select
-        orders.*,
+        orders.order_id,
+        location_id,
+        customer_id,
+
+        subtotal_cents,
+        tax_paid_cents,
+        order_total_cents,
+        subtotal,
+        tax_paid,
+        order_total,
+
+        ordered_at,
 
         order_items_summary.order_cost,
         order_items_summary.order_items_subtotal,
@@ -72,6 +83,17 @@ customer_order_count as (
 
     from compute_booleans
 
+), 
+debug as (
+select 
+{{old_star_cte('order_items_summary',prefix='DEBUG__')}},
+*
+from customer_order_count
+),
+
+final as (
+    select * from customer_order_count
+
 )
 
-select * from customer_order_count
+select * from final
